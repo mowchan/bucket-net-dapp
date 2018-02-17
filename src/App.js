@@ -13,8 +13,14 @@ import {
   WATER_TOGGLED,
   LIGHT_TOGGLED
 } from './config/events';
-import {Header} from './components/layout';
-import {GrowCard} from './components/grow';
+import {
+  TOGGLE_INTAKE,
+  TOGGLE_EXHAUST,
+  TOGGLE_WATER,
+  TOGGLE_LIGHT
+} from './config/functions';
+import {Container, Header, FlexRow} from './components/layout';
+import {GrowCard, Reading, Toggle} from './components/grow';
 import Chart from './components/Chart';
 
 class App extends Component {
@@ -132,6 +138,23 @@ class App extends Component {
     return array[array.length - 1];
   };
 
+  getReadableStatus = (status) => {
+    return status ? 'On' : 'Off';
+  };
+
+  toggleGrowComponent = (growId, contractFunction) => {
+    const {web3} = window;
+
+    this.contract[contractFunction](growId, (error, result) => {
+      if (error) {
+        console.log(error);
+        return;
+      }
+
+      console.log(result);
+    });
+  };
+
   renderConnected = () => {
     const {
       grow,
@@ -147,16 +170,42 @@ class App extends Component {
 
     return Object.keys(grow).map(key => {
       return <GrowCard key={key}>
-        <h1>{grow[key]}</h1>
-        <div>Temp: {this.getLatestValue(temp[key])}</div>
-        <div>Humidity: {this.getLatestValue(humidity[key])}</div>
-        <div>Soil Moisture: {this.getLatestValue(soilMoisture[key])}</div>
-        <div>Light Intesity: {this.getLatestValue(lightIntensity[key])}</div>
-        <div>Intake Active: {intakeActive[key] ? 'True' : 'False'}</div>
-        <div>Exhaust Active: {exhaustActive[key] ? 'True' : 'False'}</div>
-        <div>Water Active: {waterActive[key] ? 'True' : 'False'}</div>
-        <div>Light Active: {lightActive[key] ? 'True' : 'False'}</div>
-        <Chart data={temp[key]} />
+        <Container>
+          <h1>{grow[key]}</h1>
+          <FlexRow>
+            <Reading>
+              <h2>Temp</h2>
+              <span>{this.getLatestValue(temp[key])}</span>
+            </Reading>
+            <Reading>
+              <h2>Humidity</h2>
+              <span>{this.getLatestValue(humidity[key])}</span>
+            </Reading>
+            <Reading>
+              <h2>Soil Moisture</h2>
+              <span>{this.getLatestValue(soilMoisture[key])}</span>
+            </Reading>
+            <Reading>
+              <h2>Light Intensity</h2>
+              <span>{this.getLatestValue(lightIntensity[key])}</span>
+            </Reading>
+          </FlexRow>
+          <FlexRow>
+            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_INTAKE)} enabled={intakeActive[key]}>
+              <h2>Intake</h2>
+            </Toggle>
+            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_EXHAUST)} enabled={exhaustActive[key]}>
+              <h2>Exhaust</h2>
+            </Toggle>
+            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_WATER)} enabled={waterActive[key]}>
+              <h2>Water</h2>
+            </Toggle>
+            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_LIGHT)} enabled={lightActive[key]}>
+              <h2>Light</h2>
+            </Toggle>
+          </FlexRow>
+          <Chart data={temp[key]} />
+        </Container>
       </GrowCard>;
     });
   };
@@ -175,7 +224,9 @@ class App extends Component {
     return (
       <div>
         <Header>
-          <h1>BucketNet</h1>
+          <Container>
+            <h1>BucketNet</h1>
+          </Container>
         </Header>
         {!web3 && this.renderDisconnected()}
         {!!web3 && this.renderConnected()}
