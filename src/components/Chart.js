@@ -1,32 +1,70 @@
 import React, {Component} from 'react';
-import {CartesianGrid, Line, LineChart, XAxis, YAxis, Tooltip, Legend} from 'recharts';
+import {Area, AreaChart, ResponsiveContainer} from 'recharts';
+import {ChartWrapper} from './styled';
 
 export default class Chart extends Component {
-  render() {
+  static chartStyle = {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    left: 0,
+    right: 0
+  };
+
+
+  getShapedData = () => {
     const {data} = this.props;
 
-    if (!data) {
+    return data.map((value, index) => {
+      return {value};
+    });
+  };
+
+  onMouseLeave = () => {
+    const {name, data, setActiveValue} = this.props;
+    setActiveValue(name, data[data.length - 1]);
+  };
+
+  onMouseMove = (event) => {
+    if (!event) {
+      return;
+    }
+
+    const {activeTooltipIndex} = event;
+    const {name, data, setActiveValue} = this.props;
+    setActiveValue(name, data[activeTooltipIndex]);
+  };
+
+  render() {
+    if (!this.props.data) {
       return null;
     }
 
-    const shapedData = data.map((tempValue, index) => {
-      return {
-        name: index,
-        value: tempValue
-      }
-    });
-
-    console.log(shapedData);
-
     return (
-      <LineChart width={630} height={430} data={shapedData}>
-        <Line type='monotone' dataKey='value' stroke='#8884d8' strokeWidth={2} />
-        <CartesianGrid strokeDasharray="3 3" />
-        <XAxis dataKey="name" />
-        <YAxis />
-        <Tooltip />
-        <Legend />
-      </LineChart>
+      <ChartWrapper>
+        <ResponsiveContainer width="100%" height={187} style={this.chartStyle}>
+          <AreaChart
+            data={this.getShapedData()}
+            onMouseLeave={this.onMouseLeave}
+            onMouseMove={this.onMouseMove}
+          >
+            <defs>
+              <linearGradient id="gradient" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="10%" stopColor="#edc9f5" stopOpacity={1}/>
+                <stop offset="95%" stopColor="#edc9f5" stopOpacity={0}/>
+              </linearGradient>
+            </defs>
+            <Area
+              activeDot={true}
+              isAnimationActive={false}
+              type="monotone"
+              dataKey="value"
+              stroke="#d681e8"
+              fill="url(#gradient)"
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </ChartWrapper>
     );
   }
 }

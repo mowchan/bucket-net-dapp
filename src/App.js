@@ -1,4 +1,5 @@
 import React, {Component} from 'react';
+import {MdAdd} from 'react-icons/lib/md';
 import Web3 from 'web3';
 import {concat} from 'lodash';
 import {CONTRACT_ADDRESS, CONTRACT_ABI} from './config/contract';
@@ -13,15 +14,8 @@ import {
   WATER_TOGGLED,
   LIGHT_TOGGLED
 } from './config/events';
-import {
-  TOGGLE_INTAKE,
-  TOGGLE_EXHAUST,
-  TOGGLE_WATER,
-  TOGGLE_LIGHT
-} from './config/functions';
-import {Container, Header, FlexRow} from './components/layout';
-import {GrowCard, Reading, Toggle} from './components/grow';
-import Chart from './components/Chart';
+import {AddGrow, Container, Header, FlexRow} from './components/layout';
+import Grow from './components/Grow';
 
 class App extends Component {
   constructor(props) {
@@ -117,6 +111,8 @@ class App extends Component {
           lightActive: Object.assign(prevState.lightActive, {[growId]: args.lightActive})
         }));
         break;
+      default:
+        break;
     };
   };
 
@@ -128,31 +124,6 @@ class App extends Component {
     }
 
     return concat(array, web3.toDecimal(newValue));
-  };
-
-  getLatestValue = (array) => {
-    if (!array) {
-      return 'n/a';
-    }
-
-    return array[array.length - 1];
-  };
-
-  getReadableStatus = (status) => {
-    return status ? 'On' : 'Off';
-  };
-
-  toggleGrowComponent = (growId, contractFunction) => {
-    const {web3} = window;
-
-    this.contract[contractFunction](growId, (error, result) => {
-      if (error) {
-        console.log(error);
-        return;
-      }
-
-      console.log(result);
-    });
   };
 
   renderConnected = () => {
@@ -168,45 +139,21 @@ class App extends Component {
       lightActive
     } = this.state;
 
-    return Object.keys(grow).map(key => {
-      return <GrowCard key={key}>
-        <Container>
-          <h1>{grow[key]}</h1>
-          <FlexRow>
-            <Reading>
-              <h2>Temp</h2>
-              <span>{this.getLatestValue(temp[key])}</span>
-            </Reading>
-            <Reading>
-              <h2>Humidity</h2>
-              <span>{this.getLatestValue(humidity[key])}</span>
-            </Reading>
-            <Reading>
-              <h2>Soil Moisture</h2>
-              <span>{this.getLatestValue(soilMoisture[key])}</span>
-            </Reading>
-            <Reading>
-              <h2>Light Intensity</h2>
-              <span>{this.getLatestValue(lightIntensity[key])}</span>
-            </Reading>
-          </FlexRow>
-          <FlexRow>
-            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_INTAKE)} enabled={intakeActive[key]}>
-              <h2>Intake</h2>
-            </Toggle>
-            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_EXHAUST)} enabled={exhaustActive[key]}>
-              <h2>Exhaust</h2>
-            </Toggle>
-            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_WATER)} enabled={waterActive[key]}>
-              <h2>Water</h2>
-            </Toggle>
-            <Toggle onClick={() => this.toggleGrowComponent(key, TOGGLE_LIGHT)} enabled={lightActive[key]}>
-              <h2>Light</h2>
-            </Toggle>
-          </FlexRow>
-          <Chart data={temp[key]} />
-        </Container>
-      </GrowCard>;
+    return Object.keys(grow).map(growId => {
+      const data = {
+        growId,
+        grow: grow[growId],
+        temp: temp[growId],
+        humidity: humidity[growId],
+        soilMoisture: soilMoisture[growId],
+        lightIntensity: lightIntensity[growId],
+        intakeActive: intakeActive[growId],
+        exhaustActive: exhaustActive[growId],
+        waterActive: waterActive[growId],
+        lightActive: lightActive[growId]
+      };
+
+      return <Grow key={growId} contract={this.contract} data={data} />;
     });
   };
 
@@ -225,7 +172,12 @@ class App extends Component {
       <div>
         <Header>
           <Container>
-            <h1>BucketNet</h1>
+            <FlexRow>
+              <h1>BucketNet</h1>
+              <AddGrow onClick={() => console.log('add grow')}>
+                New Grow <MdAdd />
+              </AddGrow>
+            </FlexRow>
           </Container>
         </Header>
         {!web3 && this.renderDisconnected()}
