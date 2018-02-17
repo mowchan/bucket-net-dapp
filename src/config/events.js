@@ -1,0 +1,9 @@
+export const GROW_ADDED = 'GrowAdded';
+export const TEMP_CHANGE = 'TempChange';
+export const HUMIDITY_CHANGE = 'HumidityChange';
+export const SOIL_MOISTURE_CHANGE = 'SoilMoistureChange';
+export const LIGHT_INTENSITY_CHANGE = 'LightIntensityChange';
+export const INTAKE_TOGGLED = 'IntakeToggled';
+export const EXHAUST_TOGGLED = 'ExhaustToggled';
+export const WATER_TOGGLED = 'WaterToggled';
+export const LIGHT_TOGGLED = 'LightToggled';
