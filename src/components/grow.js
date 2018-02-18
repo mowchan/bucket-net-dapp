@@ -13,7 +13,6 @@ import Chart from './Chart';
 
 const TEMP = 'Temp';
 const HUMIDITY = 'Humidity';
-const SOIL_MOISTURE = 'SoilMoisture';
 const LIGHT_INTENSITY = 'LightIntensity';
 const ACTIVE = 'active';
 
@@ -115,15 +114,12 @@ export default class Grow extends Component {
               <h2>Soil Moisture</h2>
               <div>
                 <h3>{activeSoilMoisture}</h3>
-                <span>%</span>
               </div>
-              <Chart name={SOIL_MOISTURE} data={soilMoisture} setActiveValue={this.setActiveValue} />
             </Reading>
             <Reading>
               <h2>Light Intensity</h2>
               <div>
                 <h3>{activeLightIntensity}</h3>
-                <span>%</span>
               </div>
               <Chart name={LIGHT_INTENSITY} data={lightIntensity} setActiveValue={this.setActiveValue} />
             </Reading>
