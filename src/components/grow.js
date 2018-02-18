@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {MdDataUsage} from 'react-icons/lib/md';
+import {MdDataUsage, MdVideocam} from 'react-icons/lib/md';
 import {
   TOGGLE_INTAKE,
   TOGGLE_EXHAUST,
@@ -7,7 +7,7 @@ import {
   TOGGLE_LIGHT
 } from '../config/functions';
 import {ERROR_MESSAGE} from '../config/error';
-import {GrowCard, Reading, Toggle} from './styled';
+import {GrowCard, Reading, Toggle, WebCamLink} from './styled';
 import {Container, FlexRow} from './layout';
 import Chart from './Chart';
 
@@ -79,7 +79,8 @@ export default class Grow extends Component {
       intakeActive,
       exhaustActive,
       waterActive,
-      lightActive
+      lightActive,
+      ipAddress
     } = this.props.data;
     const {isPendingAction} = this.props;
     const activeTemp = this.state.activeTemp || this.getLatestValue(temp);
@@ -90,7 +91,10 @@ export default class Grow extends Component {
     return (
       <GrowCard>
         <Container>
-          <h1>{grow}</h1>
+          <FlexRow>
+            <h1>{grow}</h1>
+            {!!ipAddress && <WebCamLink href={`http://${ipAddress}:8080/?action=stream`} target="_blank"><MdVideocam /></WebCamLink>}
+          </FlexRow>
           <FlexRow>
             <Reading>
               <h2>Temp</h2>

@@ -9,6 +9,7 @@ import {
   HUMIDITY_CHANGE,
   SOIL_MOISTURE_CHANGE,
   LIGHT_INTENSITY_CHANGE,
+  IP_CHANGE,
   INTAKE_TOGGLED,
   EXHAUST_TOGGLED,
   WATER_TOGGLED,
@@ -53,6 +54,7 @@ class App extends Component {
       exhaustActive: {},
       waterActive: {},
       lightActive: {},
+      ipAddress: {},
       web3: null,
       status: {
         message: null,
@@ -218,6 +220,10 @@ class App extends Component {
           lightActive: Object.assign(prevState.lightActive, {[growId]: args.lightActive})
         }));
         break;
+      case IP_CHANGE:
+        this.setState(prevState => ({
+          ipAddress: Object.assign(prevState.ipAddress, {[growId]: args.ipAddress.toString(10)})
+        }));
       default:
         break;
     };
@@ -311,7 +317,8 @@ class App extends Component {
       intakeActive,
       exhaustActive,
       waterActive,
-      lightActive
+      lightActive,
+      ipAddress
     } = this.state;
 
     return Object.keys(grow).map(growId => {
@@ -325,7 +332,8 @@ class App extends Component {
         intakeActive: intakeActive[growId],
         exhaustActive: exhaustActive[growId],
         waterActive: waterActive[growId],
-        lightActive: lightActive[growId]
+        lightActive: lightActive[growId],
+        ipAddress: ipAddress[growId]
       };
 
       return <Grow

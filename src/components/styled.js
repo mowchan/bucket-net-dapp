@@ -5,13 +5,23 @@ import {SM_MAX, MD_MIN} from './media';
 export const GrowCard = styled.div`
   padding: 16px 0;
 
-  h1 {
+  > div > div:first-of-type {
     margin: 0 0 8px;
     border-bottom: 2px solid ${COLOR.GRAY_DARK};
+    align-items: center;
+  }
+
+  h1 {
+    margin: 0;
     padding: 8px 0;
     font-size: 16px;
     line-height: 36px;
   }
+`;
+
+export const WebCamLink = styled.a`
+  color: ${COLOR.GRAY_DARK};
+  font-size: 24px;
 `;
 
 export const Reading = styled.div`
