@@ -38,6 +38,10 @@ class App extends Component {
     super(props);
 
     this.state = {
+      owner: {
+        growCount: 0,
+        growIds: []
+      },
       grow: {},
       temp: {},
       humidity: {},
@@ -77,27 +81,94 @@ class App extends Component {
 
     this.contractInterface = web3.eth.contract(CONTRACT_ABI);
     this.contract = this.contractInterface.at(CONTRACT_ADDRESS);
+    this.getGrowCount().then(count => {
+      if (!count) {
+        this.watchEvents();
+        return;
+      }
+
+      this.getGrowIds().then(this.watchEvents());
+    });
+  }
+
+  getGrowCount = () => {
+    const {web3} = window;
+
+    return new Promise((resolve, reject) => {
+      this.contract.getGrowCount((error, count) => {
+        if (error) {
+          reject(error);
+          return;
+        };
+
+        this.setState(prevState => ({
+          owner: Object.assign(prevState.owner, {growCount: web3.toDecimal(count)})
+        }), () => {
+          resolve(count);
+        });
+      });
+    });
+  };
+
+  getGrowIds = () => {
+    const {web3} = window;
+    const {growCount} = this.state.owner;
+    const growIds = [];
+
+    return new Promise((resolve, reject) => {
+      for (let i = 0; i < growCount; i++) {
+        this.contract.getGrowIdByIndex(i, (error, growId) => {
+          growIds.push(web3.toDecimal(growId));
+        });
+      }
+
+      this.setState(prevState => ({
+        owner: Object.assign(prevState.owner, {growIds})
+      }), () => {
+        resolve(growIds);
+      });
+    });
+  };
+
+  watchEvents = () => {
+    const {web3} = window;
+    const {growIds} = this.state.owner;
+
     this.contract.allEvents({fromBlock: 0, toBlock: 'latest'}).watch((error, result) => {
       if (error) {
         console.log(error);
         return;
       }
 
-      this.handleEvent(result);
+      if (growIds.indexOf(web3.toDecimal(result.args.id)) !== -1) {
+        this.handleEvent(result);
+      }
     });
-  }
+  };
 
   handleEvent = ({event, args}) => {
     const {web3} = window;
+    const {growIds} = this.state.owner;
     const growId = web3.toDecimal(args.id);
 
     this.removePendingAction(event);
 
     switch (event) {
       case GROW_ADDED:
+        if (growIds.indexOf(growId) === -1) {
+          this.setState(prevState => ({
+            grow: Object.assign(prevState.grow, {[growId]: args.name}),
+            owner: Object.assign(prevState.owner, {
+              growCount: prevState.owner.growCount + 1,
+              growIds: this.setDeepArray(prevState.owner.growIds, growId)
+            })
+          });
+          break;
+        }
+
         this.setState(prevState => ({
           grow: Object.assign(prevState.grow, {[growId]: args.name})
-        }));
+        });
         break;
       case TEMP_CHANGE:
         this.setState(prevState => ({
