@@ -25,6 +25,7 @@ import {
   Container,
   Header,
   FlexRow,
+  MetaMask,
   StatusHref,
   StatusNoHref
 } from './components/layout';
@@ -238,9 +239,13 @@ class App extends Component {
 
   renderDisconnected = () => {
     return (
-      <div>
-        Metamask Not Connected
-      </div>
+      <Container>
+        <MetaMask>
+          <h1>No Network Connection</h1>
+          <p>Metamask is required to use this site. To install Metamask <a href="https://metamask.io/" target="_blank">click here</a>.</p>
+        </MetaMask>
+
+      </Container>
     );
   };
 
@@ -278,9 +283,9 @@ class App extends Component {
           <Container>
             <FlexRow>
               <h1>Bucket&middot;Net</h1>
-              <AddGrow onClick={() => console.log('add grow')}>
+              {!!web3 && <AddGrow onClick={() => console.log('add grow')}>
                 New Grow <MdAdd />
-              </AddGrow>
+              </AddGrow>}
             </FlexRow>
           </Container>
         </Header>

@@ -71,3 +71,14 @@ export const FlexRow = styled.div`
   flex-direction: row;
   justify-content: space-between;
 `;
+
+export const MetaMask = styled.div`
+  h1 {
+    margin: 0 0 8px;
+    border-bottom: 2px solid ${COLOR.RED};
+    color: ${COLOR.RED};
+    padding: 8px 0;
+    font-size: 16px;
+    line-height: 36px;
+  }
+`;
