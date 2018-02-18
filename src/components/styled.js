@@ -1,5 +1,6 @@
 import styled, {css} from 'styled-components';
 import {BORDER_RADIUS, COLOR, FONT, HOVER} from './variables';
+import {SM_MAX, MD_MIN} from './media';
 
 export const GrowCard = styled.div`
   padding: 16px 0;
@@ -16,17 +17,27 @@ export const GrowCard = styled.div`
 export const Reading = styled.div`
   position: relative;
   overflow: hidden;
-  flex: 1;
   margin: 8px 0;
   border: 0;
   border-radius: ${BORDER_RADIUS};
-  padding: 16px 16px 0;
+  height: 0;
   background-color: ${COLOR.WHITE};
   color: ${COLOR.GRAY_DARK};
 
-  & + div {
-    margin-left: 16px;
-  }
+  ${SM_MAX`
+    padding: 16px 16px 0;
+    height: 90px;
+    width: 100%;
+  `}
+
+  ${MD_MIN`
+    flex: 1;
+    padding: 16px 16px 20%;
+
+    & + div {
+      margin-left: 16px;
+    }
+  `}
 
   h2 {
     position: absolute;
@@ -36,7 +47,16 @@ export const Reading = styled.div`
     font-size: 16px;
 
     & + div {
-      margin-top: 68px;
+      position: absolute;
+      left: 16px;
+
+      ${SM_MAX`
+        bottom: 6px;
+      `}
+
+      ${MD_MIN`
+        bottom: 0;
+      `}
     }
   }
 
@@ -47,7 +67,14 @@ export const Reading = styled.div`
 
   h3 {
     font-family: ${FONT.MONO};
-    font-size: 78px;
+
+    ${SM_MAX`
+      font-size: 48px;
+    `}
+
+    ${MD_MIN`
+      font-size: 78px;
+    `}
   }
 
   span {
@@ -60,16 +87,29 @@ export const Reading = styled.div`
 `;
 
 export const Toggle = styled.button`
-  flex: 1;
-  margin: 8px 0 16px;
   border: 0;
   border-radius: ${BORDER_RADIUS};
   padding: 12px 16px;
   color: ${COLOR.WHITE};
 
-  & + button {
-    margin-left: 16px;
-  }
+  ${SM_MAX`
+    margin: 4px 0;
+    width: calc(50% - 4px);
+
+    &:nth-of-type(1),
+    &:nth-of-type(2) {
+      margin-top: 8px;
+    }
+  `}
+
+  ${MD_MIN`
+    flex: 1;
+    margin: 8px 0 16px;
+
+    & + button {
+      margin-left: 16px;
+    }
+  `}
 
   h2 {
     flex: 1;
@@ -123,8 +163,8 @@ export const Toggle = styled.button`
 
 export const ChartWrapper = styled.div`
   position: absolute;
-  top: 5px;
-  left: -5px;
-  right: -5px;
+  top: 0;
+  left: -5%;
+  right: -5%;
   bottom: 0;
 `;

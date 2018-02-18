@@ -1,5 +1,6 @@
 import styled, {css} from 'styled-components';
 import {BORDER_RADIUS, COLOR, FONT, HOVER} from './variables';
+import {SM_MAX, MD_MIN, MD_MAX, LG_MIN} from './media';
 
 export const Header = styled.header`
   position: fixed;
@@ -75,12 +76,21 @@ export const Modal = styled.div`
   > div {
     position: fixed;
     z-index: 2;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
     padding: 32px;
-    width: 400px;
     background-color: ${COLOR.WHITE};
+
+    ${SM_MAX`
+      top: 16px;
+      left: 16px;
+      right: 16px;
+    `}
+
+    ${MD_MIN`
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 400px;
+    `}
 
     h1 {
       margin: 0 0 8px;
@@ -148,6 +158,12 @@ const Status = `
   color: ${COLOR.WHITE};
   line-height: 52px;
   text-align: center;
+  white-space: nowrap;
+
+  > div {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 `;
 
 export const StatusHref = styled.a`
@@ -161,13 +177,21 @@ export const StatusNoHref = styled.div`
 `;
 
 export const Container = styled.div`
-  margin: 0 auto;
-  width: 900px;
+  ${MD_MAX`
+    margin: 0 16px;
+    width: calc(100% - 32px);
+  `}
+
+  ${LG_MIN`
+    margin: 0 auto;
+    width: 900px;
+  `}
 `;
 
 export const FlexRow = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   justify-content: space-between;
 `;
 
