@@ -39,8 +39,10 @@ class App extends Component {
 
     this.state = {
       owner: {
+        address: '',
         growCount: 0,
-        growIds: []
+        growIds: [],
+        synced: false
       },
       grow: {},
       temp: {},
@@ -73,59 +75,64 @@ class App extends Component {
 
     if (typeof web3 !== 'undefined') {
       console.log('web3 connected!');
-      this.setState({web3: new Web3(web3.currentProvider)});
+      web3.eth.getCoinbase((error, address) => {
+        this.setState(prevState => ({
+          owner: Object.assign(prevState.owner, {address}),
+          web3: new Web3(web3.currentProvider)
+        }), () => {
+          this.contractInterface = web3.eth.contract(CONTRACT_ABI);
+          this.contract = this.contractInterface.at(CONTRACT_ADDRESS);
+          this.updateOwner().then(() => {
+            this.watchEvents();
+          }).catch(error => {
+            console.log(error);
+          });
+        });
+      })
     } else {
       console.log('No web3');
       return;
     }
-
-    this.contractInterface = web3.eth.contract(CONTRACT_ABI);
-    this.contract = this.contractInterface.at(CONTRACT_ADDRESS);
-    this.getGrowCount().then(count => {
-      if (!count) {
-        this.watchEvents();
-        return;
-      }
-
-      this.getGrowIds().then(this.watchEvents());
-    });
   }
 
-  getGrowCount = () => {
+  updateOwner = () => {
     const {web3} = window;
+    const {address} = this.state.owner;
 
     return new Promise((resolve, reject) => {
-      this.contract.getGrowCount((error, count) => {
+      this.contract.getGrowCount(address, (error, growCount) => {
         if (error) {
+          console.log(error);
           reject(error);
-          return;
-        };
+        }
 
-        this.setState(prevState => ({
-          owner: Object.assign(prevState.owner, {growCount: web3.toDecimal(count)})
-        }), () => {
-          resolve(count);
-        });
-      });
-    });
-  };
+        const growIds = [];
+        let loopCounter = 0;
+        growCount = web3.toDecimal(growCount);
 
-  getGrowIds = () => {
-    const {web3} = window;
-    const {growCount} = this.state.owner;
-    const growIds = [];
+        for (let i = 0; i < growCount; i++) {
+          this.contract.getGrowIdByIndex(i, (error, growId) => {
+            if (error) {
+              console.log(error);
+              reject(error);
+            }
+        
+            loopCounter++;
+            growIds.push(web3.toDecimal(growId));
 
-    return new Promise((resolve, reject) => {
-      for (let i = 0; i < growCount; i++) {
-        this.contract.getGrowIdByIndex(i, (error, growId) => {
-          growIds.push(web3.toDecimal(growId));
-        });
-      }
-
-      this.setState(prevState => ({
-        owner: Object.assign(prevState.owner, {growIds})
-      }), () => {
-        resolve(growIds);
+            if (loopCounter === growCount) {
+              this.setState(prevState => ({
+                owner: Object.assign(prevState.owner, {
+                  growCount: growCount,
+                  growIds: growIds,
+                  synced: true
+                })
+              }), () => {
+                resolve(growIds);
+              });
+            }
+          });
+        }
       });
     });
   };
@@ -140,32 +147,42 @@ class App extends Component {
         return;
       }
 
-      if (growIds.indexOf(web3.toDecimal(result.args.id)) !== -1) {
-        this.handleEvent(result);
-      }
+      this.handleEvent(result);
     });
   };
 
   handleEvent = ({event, args}) => {
     const {web3} = window;
-    const {growIds} = this.state.owner;
+    const {synced} = this.state.owner;
+    const growId = web3.toDecimal(args.id);
+
+    if (event !== GROW_ADDED) {
+      this.handleEachEvent(event, args);
+      return;
+    }
+
+    if (!synced) {
+      this.updateOwner().then(growIds => {
+        if (growIds.indexOf(web3.toDecimal(args.id)) !== -1) {
+          this.handleEachEvent(event, args);
+        }
+      });
+      return;
+    }
+
+    if (this.state.owner.growIds.indexOf(web3.toDecimal(args.id)) !== -1) {
+      this.handleEachEvent(event, args);
+    }
+  };
+
+  handleEachEvent = (event, args) => {
+    const {web3} = window;
     const growId = web3.toDecimal(args.id);
 
     this.removePendingAction(event);
 
     switch (event) {
       case GROW_ADDED:
-        if (growIds.indexOf(growId) === -1) {
-          this.setState(prevState => ({
-            grow: Object.assign(prevState.grow, {[growId]: args.name}),
-            owner: Object.assign(prevState.owner, {
-              growCount: prevState.owner.growCount + 1,
-              growIds: this.setDeepArray(prevState.owner.growIds, growId)
-            })
-          }));
-          break;
-        }
-
         this.setState(prevState => ({
           grow: Object.assign(prevState.grow, {[growId]: args.name})
         }));
@@ -366,6 +383,13 @@ class App extends Component {
       this.setStatus('Transaction posted!', transactionHash);
       this.addPendingAction(GROW_ADDED);
       this.toggleModal();
+      this.setState(prevState => ({
+        owner: Object.assign(prevState.owner, {synced: false}),
+        inputText: Object.assign(prevState.inputText, {
+          name: '',
+          address: ''
+        })
+      }));
     });
   };
 
