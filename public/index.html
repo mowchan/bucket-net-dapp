@@ -25,8 +25,34 @@
       body {
         margin: 0;
         padding: 52px 0 0;
-        background-color: #B1B1B1;
         font-family: 'Roboto Mono', monospace;
+      }
+
+      .icon-spin {
+        -webkit-animation: icon-spin 2s infinite linear;
+        animation: icon-spin 2s infinite linear;
+      }
+
+      @-webkit-keyframes icon-spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(359deg);
+          transform: rotate(359deg);
+        }
+      }
+
+      @keyframes icon-spin {
+        0% {
+          -webkit-transform: rotate(0deg);
+          transform: rotate(0deg);
+        }
+        100% {
+          -webkit-transform: rotate(359deg);
+          transform: rotate(359deg);
+        }
       }
     </style>
   </head>

@@ -72,8 +72,14 @@ export const Toggle = styled.button`
   }
 
   h2 {
-    display: inline;
+    flex: 1;
     margin: 0;
+    text-align: left;
+  }
+
+  svg {
+    font-size: 21px;
+    margin: 0 8px;
   }
 
   h2,
@@ -105,7 +111,14 @@ export const Toggle = styled.button`
     }
   `}
 
-  ${HOVER}
+  ${props => !!props.disabled && css`
+    cursor: not-allowed;
+    background-color: ${COLOR.GRAY_DARK};
+  `}
+
+  ${props => !props.disabled && css`
+    ${HOVER}
+  `}
 `;
 
 export const ChartWrapper = styled.div`

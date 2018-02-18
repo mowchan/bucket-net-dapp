@@ -6,7 +6,7 @@ import registerServiceWorker from './registerServiceWorker';
 
 WebFont.load({
   google: {
-    families: ['Roboto Mono:300', 'Roboto']
+    families: ['Roboto Mono:300']
   }
 });
 

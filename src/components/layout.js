@@ -7,14 +7,16 @@ export const Header = styled.header`
   left: 0;
   right: 0;
   z-index: 1;
-  background-color: ${COLOR.GRAY_LIGHTER};
+  background-color: ${COLOR.GRAY_DARK};
 
   h1 {
     margin: 0;
-    color: ${COLOR.GRAY_DARK};
+    color: ${COLOR.WHITE};
     font-family: ${FONT.MONO};
     font-size: 20px;
+    letter-spacing: 5px;
     line-height: 52px;
+    text-transform: lowercase;
   }
 `;
 
@@ -36,6 +38,27 @@ export const AddGrow = styled.button`
   }
 
   ${HOVER}
+`;
+
+const Status = `
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  color: ${COLOR.WHITE};
+  line-height: 52px;
+  text-align: center;
+`;
+
+export const StatusHref = styled.a`
+  ${Status};
+  background-color: ${COLOR.GREEN};
+`;
+
+export const StatusNoHref = styled.div`
+  ${Status};
+  background-color: ${COLOR.RED};
 `;
 
 export const Container = styled.div`

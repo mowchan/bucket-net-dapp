@@ -14,7 +14,20 @@ import {
   WATER_TOGGLED,
   LIGHT_TOGGLED
 } from './config/events';
-import {AddGrow, Container, Header, FlexRow} from './components/layout';
+import {
+  TOGGLE_INTAKE,
+  TOGGLE_EXHAUST,
+  TOGGLE_WATER,
+  TOGGLE_LIGHT
+} from './config/functions';
+import {
+  AddGrow,
+  Container,
+  Header,
+  FlexRow,
+  StatusHref,
+  StatusNoHref
+} from './components/layout';
 import Grow from './components/Grow';
 
 class App extends Component {
@@ -31,7 +44,12 @@ class App extends Component {
       exhaustActive: {},
       waterActive: {},
       lightActive: {},
-      web3: null
+      web3: null,
+      status: {
+        message: null,
+        transactionHash: null
+      },
+      pendingActions: []
     };
 
     this.contractInterface = null
@@ -64,6 +82,8 @@ class App extends Component {
   handleEvent = ({event, args}) => {
     const {web3} = window;
     const growId = web3.toDecimal(args.id);
+
+    this.removePendingAction(event);
 
     switch (event) {
       case GROW_ADDED:
@@ -126,6 +146,57 @@ class App extends Component {
     return concat(array, web3.toDecimal(newValue));
   };
 
+  setStatus = (message, transactionHash) => {
+    this.setState({
+      status: {
+        message,
+        transactionHash
+      }
+    }, () => {
+      setTimeout(() => {
+        this.setState({
+          status: {
+            message: null,
+            transactionHash: null
+          }
+        });
+      }, 10000);
+    });
+  };
+
+  addPendingAction = (contractFunction) => {
+    this.setState(prevState => ({
+      pendingActions: concat(prevState.pendingActions, contractFunction)
+    }));
+  };
+
+  removePendingAction = (event) => {
+    let contractFunction;
+
+    switch (event) {
+      case INTAKE_TOGGLED:
+        contractFunction = TOGGLE_INTAKE;
+        break;
+      case EXHAUST_TOGGLED:
+        contractFunction = TOGGLE_EXHAUST;
+        break;
+      case WATER_TOGGLED:
+        contractFunction = TOGGLE_WATER;
+        break;
+      case LIGHT_TOGGLED:
+        contractFunction = TOGGLE_LIGHT;
+        break;
+      default:
+        break;
+    }
+
+    this.setState(prevState => ({
+      pendingActions: prevState.pendingActions.filter(action => {
+        return action !== contractFunction;
+      })
+    }));
+  }
+
   renderConnected = () => {
     const {
       grow,
@@ -136,7 +207,8 @@ class App extends Component {
       intakeActive,
       exhaustActive,
       waterActive,
-      lightActive
+      lightActive,
+      pendingActions
     } = this.state;
 
     return Object.keys(grow).map(growId => {
@@ -153,7 +225,14 @@ class App extends Component {
         lightActive: lightActive[growId]
       };
 
-      return <Grow key={growId} contract={this.contract} data={data} />;
+      return <Grow
+        addPendingAction={this.addPendingAction}
+        pendingActions={pendingActions}
+        key={growId}
+        contract={this.contract}
+        data={data}
+        setStatus={this.setStatus}
+      />;
     });
   };
 
@@ -165,15 +244,40 @@ class App extends Component {
     );
   };
 
+  renderStatus = () => {
+    const {message, transactionHash} = this.state.status;
+
+    if (transactionHash) {
+      const href = 'https://rinkeby.etherscan.io/tx/' + transactionHash;
+
+      return (
+        <StatusHref href={href} target="_blank">
+          <Container>
+            {message} {transactionHash}
+          </Container>
+        </StatusHref>
+      );
+    }
+
+    return (
+      <StatusNoHref>
+        <Container>
+          {message}
+        </Container>
+      </StatusNoHref>
+    );
+  };
+
   render() {
-    const {web3} = this.state;
+    const {web3, status} = this.state;
 
     return (
       <div>
         <Header>
+          {!!status.message && this.renderStatus()}
           <Container>
             <FlexRow>
-              <h1>BucketNet</h1>
+              <h1>Bucket&middot;Net</h1>
               <AddGrow onClick={() => console.log('add grow')}>
                 New Grow <MdAdd />
               </AddGrow>
