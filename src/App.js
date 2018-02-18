@@ -138,9 +138,6 @@ class App extends Component {
   };
 
   watchEvents = () => {
-    const {web3} = window;
-    const {growIds} = this.state.owner;
-
     this.contract.allEvents({fromBlock: 0, toBlock: 'latest'}).watch((error, result) => {
       if (error) {
         console.log(error);
@@ -154,7 +151,6 @@ class App extends Component {
   handleEvent = ({event, args}) => {
     const {web3} = window;
     const {synced} = this.state.owner;
-    const growId = web3.toDecimal(args.id);
 
     if (event !== GROW_ADDED) {
       this.handleEachEvent(event, args);
