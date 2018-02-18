@@ -162,13 +162,13 @@ class App extends Component {
               growCount: prevState.owner.growCount + 1,
               growIds: this.setDeepArray(prevState.owner.growIds, growId)
             })
-          });
+          }));
           break;
         }
 
         this.setState(prevState => ({
           grow: Object.assign(prevState.grow, {[growId]: args.name})
-        });
+        }));
         break;
       case TEMP_CHANGE:
         this.setState(prevState => ({
