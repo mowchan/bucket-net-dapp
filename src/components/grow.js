@@ -6,6 +6,7 @@ import {
   TOGGLE_WATER,
   TOGGLE_LIGHT
 } from '../config/functions';
+import {ERROR_MESSAGE} from '../config/error';
 import {GrowCard, Reading, Toggle} from './styled';
 import {Container, FlexRow} from './layout';
 import Chart from './Chart';
@@ -53,22 +54,12 @@ export default class Grow extends Component {
     this.setState({[ACTIVE + key]: value});
   };
 
-  isPendingAction = (contractFunction) => {
-    const {pendingActions} = this.props;
-
-    if (!pendingActions) {
-      return false;
-    }
-
-    return pendingActions.indexOf(contractFunction) !== -1;
-  };
-
   toggleGrowComponent = (growId, contractFunction) => {
     const {setStatus, addPendingAction} = this.props;
 
     this.props.contract[contractFunction](growId, (error, transactionHash) => {
       if (error) {
-        setStatus('Something went wrong when posting that transaction. Please try again.', null);
+        setStatus(ERROR_MESSAGE, null);
         console.log(error);
         return;
       }
@@ -91,6 +82,7 @@ export default class Grow extends Component {
       waterActive,
       lightActive
     } = this.props.data;
+    const {isPendingAction} = this.props;
     const activeTemp = this.state.activeTemp || this.getLatestValue(temp);
     const activeHumidity = this.state.activeHumidity || this.getLatestValue(humidity);
     const activeSoilMoisture = this.state.activeSoilMoisture || this.getLatestValue(soilMoisture);
@@ -137,31 +129,31 @@ export default class Grow extends Component {
             </Reading>
           </FlexRow>
           <FlexRow>
-            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_INTAKE)} enabled={intakeActive} disabled={this.isPendingAction(TOGGLE_INTAKE)}>
+            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_INTAKE)} enabled={intakeActive} disabled={isPendingAction(TOGGLE_INTAKE)}>
               <FlexRow>
                 <h2>Intake</h2>
-                {!!this.isPendingAction(TOGGLE_INTAKE) && <MdDataUsage className="icon-spin" />}
+                {!!isPendingAction(TOGGLE_INTAKE) && <MdDataUsage className="icon-spin" />}
                 <span>{this.getReadableStatus(intakeActive)}</span>
               </FlexRow>
             </Toggle>
-            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_EXHAUST)} enabled={exhaustActive} disabled={this.isPendingAction(TOGGLE_EXHAUST)}>
+            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_EXHAUST)} enabled={exhaustActive} disabled={isPendingAction(TOGGLE_EXHAUST)}>
               <FlexRow>
                 <h2>Exhaust</h2>
-                {!!this.isPendingAction(TOGGLE_EXHAUST) && <MdDataUsage className="icon-spin" />}
+                {!!isPendingAction(TOGGLE_EXHAUST) && <MdDataUsage className="icon-spin" />}
                 <span>{this.getReadableStatus(exhaustActive)}</span>
               </FlexRow>
             </Toggle>
-            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_WATER)} enabled={waterActive} disabled={this.isPendingAction(TOGGLE_WATER)}>
+            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_WATER)} enabled={waterActive} disabled={isPendingAction(TOGGLE_WATER)}>
               <FlexRow>
                 <h2>Water</h2>
-                {!!this.isPendingAction(TOGGLE_WATER) && <MdDataUsage className="icon-spin" />}
+                {!!isPendingAction(TOGGLE_WATER) && <MdDataUsage className="icon-spin" />}
                 <span>{this.getReadableStatus(waterActive)}</span>
               </FlexRow>
             </Toggle>
-            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_LIGHT)} enabled={lightActive} disabled={this.isPendingAction(TOGGLE_LIGHT)}>
+            <Toggle onClick={() => this.toggleGrowComponent(growId, TOGGLE_LIGHT)} enabled={lightActive} disabled={isPendingAction(TOGGLE_LIGHT)}>
               <FlexRow>
                 <h2>Light</h2>
-                {!!this.isPendingAction(TOGGLE_LIGHT) && <MdDataUsage className="icon-spin" />}
+                {!!isPendingAction(TOGGLE_LIGHT) && <MdDataUsage className="icon-spin" />}
                 <span>{this.getReadableStatus(lightActive)}</span>
               </FlexRow>
             </Toggle>

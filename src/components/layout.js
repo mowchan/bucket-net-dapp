@@ -1,4 +1,4 @@
-import styled from 'styled-components';
+import styled, {css} from 'styled-components';
 import {BORDER_RADIUS, COLOR, FONT, HOVER} from './variables';
 
 export const Header = styled.header`
@@ -24,20 +24,119 @@ export const AddGrow = styled.button`
   margin: 10px 0;
   border: 0;
   border-radius: ${BORDER_RADIUS};
-  padding-left: 16px;
-  padding-right: 16px;
-  background-color: ${COLOR.GRAY_DARK};
+  padding-left: 12px;
+  padding-right: 12px;
   color: ${COLOR.WHITE};
   transition: all 150ms ease;
+  font-family: ${FONT.MONO};
   font-size: 13px;
   line-height: 13px;
 
   svg {
     position: relative;
     top: -1px;
+    margin-left: 8px;
   }
 
-  ${HOVER}
+  ${props => !props.disabled && css`
+    background-color: ${COLOR.GREEN};
+    ${HOVER}
+  `}
+
+  ${props => !!props.disabled && css`
+    cursor: not-allowed;
+    background-color: ${COLOR.GRAY};
+  `}
+
+
+`;
+
+export const Modal = styled.div`
+  position: fixed;
+  z-index: 2;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+
+  > button {
+    cursor: pointer;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 0;
+    width: 100%;
+    background: ${COLOR.GRAY_DARK};
+    opacity: 0.75;
+  }
+
+  > div {
+    position: fixed;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 32px;
+    width: 400px;
+    background-color: ${COLOR.WHITE};
+
+    h1 {
+      margin: 0 0 8px;
+      border-bottom: 2px solid ${COLOR.GRAY_DARK};
+      padding: 8px 0;
+      font-size: 16px;
+      line-height: 36px;
+    }
+
+    input,
+    button {
+      border: 0;
+      border-radius: ${BORDER_RADIUS};
+    }
+
+    input {
+      display: block;
+      margin: 16px 0;
+      padding: 8px 16px;
+      width: calc(100% - 32px);
+      font-family: ${FONT.MONO};
+      font-size: 18px;
+    }
+
+    button {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      padding: 8px 16px;
+      width: 100%;
+      color: ${COLOR.WHITE};
+      font-family: ${FONT.MONO};
+      font-size: 18px;
+      text-align: left;
+
+      svg {
+        font-size: 24px;
+        margin-right: -5px;
+      }
+
+      ${props => !!props.disabled && css`
+        cursor: not-allowed;
+        background-color: ${COLOR.GRAY_DARK};
+      `}
+
+      ${props => !props.disabled && css`
+        ${HOVER}
+        background-color: ${COLOR.GREEN};
+      `}
+    }
+
+    p {
+      margin-bottom: 0;
+      font-size: 12px;
+    }
+  }
 `;
 
 const Status = `

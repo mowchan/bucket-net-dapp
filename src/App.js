@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {MdAdd} from 'react-icons/lib/md';
+import {MdAdd, MdDataUsage} from 'react-icons/lib/md';
 import Web3 from 'web3';
 import {concat} from 'lodash';
 import {CONTRACT_ADDRESS, CONTRACT_ABI} from './config/contract';
@@ -20,12 +20,14 @@ import {
   TOGGLE_WATER,
   TOGGLE_LIGHT
 } from './config/functions';
+import {ERROR_MESSAGE} from './config/error';
 import {
   AddGrow,
   Container,
   Header,
   FlexRow,
   MetaMask,
+  Modal,
   StatusHref,
   StatusNoHref
 } from './components/layout';
@@ -50,7 +52,12 @@ class App extends Component {
         message: null,
         transactionHash: null
       },
-      pendingActions: []
+      pendingActions: [],
+      modalVisible: false,
+      inputText: {
+        name: '',
+        address: ''
+      }
     };
 
     this.contractInterface = null
@@ -165,6 +172,12 @@ class App extends Component {
     });
   };
 
+  toggleModal = () => {
+    this.setState(prevState => ({
+      modalVisible: !prevState.modalVisible
+    }));
+  };
+
   addPendingAction = (contractFunction) => {
     this.setState(prevState => ({
       pendingActions: concat(prevState.pendingActions, contractFunction)
@@ -188,6 +201,7 @@ class App extends Component {
         contractFunction = TOGGLE_LIGHT;
         break;
       default:
+        contractFunction = event;
         break;
     }
 
@@ -197,6 +211,16 @@ class App extends Component {
       })
     }));
   }
+
+  isPendingAction = (contractFunction) => {
+    const {pendingActions} = this.state;
+
+    if (!pendingActions) {
+      return false;
+    }
+
+    return pendingActions.indexOf(contractFunction) !== -1;
+  };
 
   renderConnected = () => {
     const {
@@ -208,8 +232,7 @@ class App extends Component {
       intakeActive,
       exhaustActive,
       waterActive,
-      lightActive,
-      pendingActions
+      lightActive
     } = this.state;
 
     return Object.keys(grow).map(growId => {
@@ -228,7 +251,7 @@ class App extends Component {
 
       return <Grow
         addPendingAction={this.addPendingAction}
-        pendingActions={pendingActions}
+        isPendingAction={this.isPendingAction}
         key={growId}
         contract={this.contract}
         data={data}
@@ -242,10 +265,62 @@ class App extends Component {
       <Container>
         <MetaMask>
           <h1>No Network Connection</h1>
-          <p>Metamask is required to use this site. To install Metamask <a href="https://metamask.io/" target="_blank">click here</a>.</p>
+          <p>Metamask is required to use this site. To install Metamask <a href="https://metamask.io/" target="_blank" rel="noopener noreferrer">click here</a>.</p>
         </MetaMask>
-
       </Container>
+    );
+  };
+
+  onChangeInput = ({target}) => {
+    const {value} = target;
+    const fieldName = target.attributes['name'].value;
+
+    this.setState(prevState => ({
+      inputText: Object.assign(prevState.inputText, {[fieldName]: value})
+    }));
+  };
+
+  onNewGrow = (event) => {
+    const {name, address} = this.state.inputText;
+
+    event.preventDefault();
+
+    this.contract.createGrow(name, address, (error, transactionHash) => {
+      if (error) {
+        this.setStatus(ERROR_MESSAGE, null);
+        console.log(error);
+        return;
+      }
+
+      this.setStatus('Transaction posted!', transactionHash);
+      this.addPendingAction(GROW_ADDED);
+      this.toggleModal();
+    });
+  };
+
+  renderModal = () => {
+    const {name, address} = this.state.inputText;
+    const buttonDisabled = !name || !address;
+
+    return (
+      <Modal disabled={buttonDisabled}>
+        <div>
+          <h1>New Grow</h1>
+          <form onSubmit={this.onNewGrow}>
+            <input type="text" name="name" placeholder="Grow Name" onChange={this.onChangeInput} value={name} />
+            <input type="text" name="address" placeholder="Bucket Address" onChange={this.onChangeInput} value={address} />
+            <button type="submit" disabled={buttonDisabled}>
+              Add Grow
+              <MdAdd />
+            </button>
+            <p>
+              We require the address of the bucket in order to enable the bucket
+              to update environmental data in the BucketNet contract.
+            </p>
+          </form>
+        </div>
+        <button onClick={this.toggleModal} />
+      </Modal>
     );
   };
 
@@ -256,7 +331,7 @@ class App extends Component {
       const href = 'https://rinkeby.etherscan.io/tx/' + transactionHash;
 
       return (
-        <StatusHref href={href} target="_blank">
+        <StatusHref href={href} target="_blank" rel="noopener noreferrer">
           <Container>
             {message} {transactionHash}
           </Container>
@@ -274,7 +349,8 @@ class App extends Component {
   };
 
   render() {
-    const {web3, status} = this.state;
+    const {web3, modalVisible, status} = this.state;
+    const isPending = this.isPendingAction(GROW_ADDED);
 
     return (
       <div>
@@ -283,12 +359,15 @@ class App extends Component {
           <Container>
             <FlexRow>
               <h1>Bucket&middot;Net</h1>
-              {!!web3 && <AddGrow onClick={() => console.log('add grow')}>
-                New Grow <MdAdd />
+              {!!web3 && <AddGrow onClick={this.toggleModal} disabled={isPending}>
+                New Grow
+                {!isPending && <MdAdd />}
+                {!!isPending && <MdDataUsage className="icon-spin" />}
               </AddGrow>}
             </FlexRow>
           </Container>
         </Header>
+        {!!modalVisible && this.renderModal()}
         {!web3 && this.renderDisconnected()}
         {!!web3 && this.renderConnected()}
       </div>
