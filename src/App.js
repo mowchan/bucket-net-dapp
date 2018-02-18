@@ -215,8 +215,14 @@ class App extends Component {
         break;
       case WATER_TOGGLED:
         this.setState(prevState => ({
-          waterActive: Object.assign(prevState.waterActive, {[growId]: args.waterActive})
-        }));
+          waterActive: Object.assign(prevState.waterActive, {[growId]: true})
+        }), () => {
+          setTimeout(() => {
+            this.setState(pState => ({
+              waterActive: Object.assign(pState.waterActive, {[growId]: false})
+            }));
+          }, 10000);
+        });
         break;
       case LIGHT_TOGGLED:
         this.setState(prevState => ({
